@@ -34,8 +34,10 @@ async function aspettaCliente(page: Page): Promise<void> {
   await page.waitForFunction(() => window.banconeProva?.stato().fase === "attesa");
 }
 
-async function apri(page: Page): Promise<void> {
-  await page.goto("/?prova");
+// Con «calma» la pazienza dei clienti non scende: su un computer lento i gesti simulati durano tanto e i clienti
+// scapperebbero a metà gelato. La pazienza vera la prova «senza calma la pazienza scende» qui sotto.
+async function apri(page: Page, calma = true): Promise<void> {
+  await page.goto(calma ? "/?prova&calma" : "/?prova");
   await page.waitForFunction(() => window.giocoProva?.scene.isActive("Titolo") === true);
   const v = page.viewportSize()!;
   await page.mouse.click(v.width / 2, v.height / 2);
@@ -64,7 +66,14 @@ async function servi(page: Page): Promise<{ giusto: boolean; condimento?: string
   await page.mouse.down();
   await page.mouse.move(g.x, g.y - 120, { steps: 8 });
   await page.mouse.up();
-  await page.waitForFunction(() => window.banconeProva!.stato().fase !== "attesa");
+  try {
+    await page.waitForFunction(() => window.banconeProva!.stato().fase !== "attesa", undefined, { timeout: 15000 });
+  } catch (e) {
+    // se il gelato non parte, lo stato e una foto per capire perché (succede solo con il computer molto carico)
+    console.log("DIAG ordine", JSON.stringify(o), "prima", JSON.stringify(prima.gelato), "zona", JSON.stringify(g), "ora", JSON.stringify(await stato(page)));
+    await page.screenshot({ path: "test-results/diag.png" });
+    throw e;
+  }
   const dopo = await stato(page);
   return { giusto: dopo.ultimoVoto!.giusto, condimento: o.condimento, base: o.base };
 }
@@ -220,4 +229,35 @@ test("una vaschetta che cambia gusto si prende col nuovo nome", async ({ page })
   await trascina(page, `vaschetta:${nuovo}`, "attacco");
   expect((await stato(page)).gelato.palline).toEqual([nuovo]);
   expect(errori).toEqual([]);
+});
+
+test("dopo la prima apertura si gioca anche senza rete", async ({ page, context }) => {
+  test.setTimeout(120000);
+  const errori = osservaErrori(page);
+  await page.goto("/?prova&calma");
+  // il service worker deve aver preso in mano la pagina (alla prima visita serve un ricarico)
+  await page.evaluate(() => navigator.serviceWorker.ready);
+  await page.reload();
+  await page.waitForFunction(() => navigator.serviceWorker.controller !== null);
+  await page.waitForFunction(() => window.giocoProva?.scene.isActive("Titolo") === true);
+  await context.setOffline(true);
+  await page.reload();
+  await page.waitForFunction(() => window.giocoProva?.scene.isActive("Titolo") === true);
+  const v = page.viewportSize()!;
+  await page.mouse.click(v.width / 2, v.height / 2);
+  await aspettaCliente(page);
+  expect((await servi(page)).giusto).toBe(true);
+  await context.setOffline(false);
+  expect(errori).toEqual([]);
+});
+
+test("senza calma la pazienza scende e il cliente se ne va", async ({ page }) => {
+  test.setTimeout(90000);
+  await apri(page, false);
+  const prima = await stato(page);
+  await page.waitForTimeout(1500);
+  expect((await stato(page)).tempo).toBeLessThan(prima.tempo);
+  // nessun gesto: allo scadere il cliente se ne va e si perde un cuore
+  await page.waitForFunction(() => window.banconeProva!.stato().cuori < 3, undefined, { timeout: 60000 });
+  expect((await stato(page)).ultimoVoto!.giusto).toBe(false);
 });

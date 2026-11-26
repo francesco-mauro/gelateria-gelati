@@ -35,3 +35,10 @@ declare global {
   }
 }
 if (/[?&]prova(?:[&=]|$)/.test(window.location.search)) window.giocoProva = gioco;
+
+// Il gioco anche senza rete (public/sw.js), solo nella versione pubblicata: in sviluppo darebbe file vecchi.
+if (import.meta.env.PROD && "serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/sw.js").catch(() => undefined);
+  });
+}

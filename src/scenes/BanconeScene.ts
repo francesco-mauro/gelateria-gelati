@@ -91,6 +91,7 @@ export class BanconeScene extends Phaser.Scene {
   private fase: Fase = "arrivo";
   private tempo = 0;
   private ultimoVoto?: Voto;
+  private calma = false;
   private conAiuti = true;
 
   private H = 640;
@@ -148,6 +149,9 @@ export class BanconeScene extends Phaser.Scene {
     this.zone = [];
     this.bottiglie.clear();
     this.conAiuti = leggi().servitiTotali < SERVITI_CON_AIUTO;
+    // solo per le prove dei gesti (?prova&calma): la pazienza non scende, così un computer lento non fa scappare i
+    // clienti a metà gelato. Come scende la pazienza lo provano le prove sulla logica.
+    this.calma = /[?&]prova(?:[&=]|$)/.test(window.location.search) && /[?&]calma(?:[&=]|$)/.test(window.location.search);
 
     this.disegnaSfondo();
     this.disegnaAttrezzi();
@@ -415,7 +419,7 @@ export class BanconeScene extends Phaser.Scene {
       if (this.versando.livello >= 1) this.fermaSalsa();
     }
     if (this.fase !== "attesa" || this.cliente === undefined) return;
-    this.tempo -= dt;
+    if (!this.calma) this.tempo -= dt;
     this.disegnaPazienza();
     if (this.tempo <= 0) this.scaduto();
   }
