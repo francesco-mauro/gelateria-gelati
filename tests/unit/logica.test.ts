@@ -8,6 +8,8 @@ import { aggiungiServito, fineDiPartita, impostaMuto, leggi, type Archivio } fro
 import { confronta, creaOrdine, gelatoVuoto, qualitaSalsa, type Gelato, type Ordine } from "../../src/logic/ordine";
 import { CUORI, Partita } from "../../src/logic/partita";
 import { moltiplicatore, vota } from "../../src/logic/voto";
+import { leggiRisposte, scriviGusti, trovaGusto } from "../../src/data/riconosci";
+import { readFileSync } from "node:fs";
 
 const giusto = (o: Ordine, extra: Partial<Gelato> = {}): Gelato => ({
   base: o.base,
@@ -188,5 +190,83 @@ describe("memoria", () => {
     expect(leggi(a).record).toBe(0);
     expect(leggi(undefined).record).toBe(0);
     expect(fineDiPartita(10, undefined)).toBe(true);
+  });
+});
+
+describe("gusti preferiti oltre le otto vaschette", () => {
+  // dieci amici con dieci gusti diversi: più delle otto vaschette
+  const dieci = ["mango", "menta", "amarena", "puffo", "nutella", "kinder", "pesca", "bosco", "yogurt", "malaga"];
+  const amici = AMICI.slice(0, 10).map((a, i) => Object.assign({}, a, { gusto: dieci[i] }));
+  it("ognuno ordina sempre il suo gusto, il bancone resta di otto vaschette tutte diverse", () => {
+    const p = new Partita(casoConSeme(21), amici);
+    let cambi = 0;
+    for (let i = 0; i < 60; i++) {
+      const prima = [...p.vaschette];
+      const c = p.prossimoCliente();
+      expect(c.ordine.palline).toContain(c.amico.gusto);
+      expect(p.vaschette).toHaveLength(MAX_VASCHETTE);
+      expect(new Set(p.vaschette).size).toBe(MAX_VASCHETTE);
+      for (const g of c.ordine.palline) expect(p.vaschette).toContain(g);
+      // senza cambio il bancone resta com'era; con il cambio cambia solo quella vaschetta, verso il gusto dell'amico
+      const atteso = [...prima];
+      if (c.cambio !== undefined) {
+        cambi++;
+        atteso[c.cambio.indice] = c.amico.gusto!;
+      }
+      expect(p.vaschette).toEqual(atteso);
+      expect(c.cambio === undefined || prima[c.cambio.indice] === c.cambio.da).toBe(true);
+    }
+    expect(cambi).toBeGreaterThan(0);
+  });
+  it("con otto gusti o meno nessuna vaschetta cambia", () => {
+    const p = new Partita(casoConSeme(22), amici.slice(0, 8));
+    for (let i = 0; i < 30; i++) expect(p.prossimoCliente().cambio).toBeUndefined();
+  });
+  it("i nomi dei gusti stanno sotto la vaschetta", () => {
+    for (const g of GUSTI) expect(g.nome.length).toBeLessThanOrEqual(13);
+  });
+});
+
+describe("risposte degli amici", () => {
+  it("riconosce chi e il gusto, scritti come capita", () => {
+    const r = leggiRisposte(
+      [
+        "Cristina: pistacchio",
+        "Andreea - cioccolato fondente!!",
+        "gaia = Fior di latte 😍",
+        "Bevilacqua: cioccolato bianco",
+        "Luca: frutti di bosco",
+        "Fraulin: il caffè",
+        "",
+        "Gilberto: menta e cioccolato",
+        "Paolo: boh fammi pensare",
+        "Sconosciuto: fragola",
+      ].join("\n"),
+    );
+    const visto = r.map((x) => [x.amico, x.gusto]);
+    expect(visto).toEqual([
+      ["cristina", "pistacchio"],
+      ["dede", "cioccolato"],
+      ["gaia", "fiordilatte"],
+      ["francesca", "bianco"],
+      ["luca", "bosco"],
+      ["matteo", "caffe"],
+      ["gilberto", "menta"],
+      ["paolo", undefined],
+      [undefined, undefined],
+    ]);
+  });
+  it("ogni modo di dire porta a un gusto che esiste", () => {
+    for (const g of GUSTI) expect(trovaGusto(g.nome)?.gusto).toBe(g.id);
+  });
+  it("scrive e riscrive il gusto nella riga dell'amico", () => {
+    const sorgente = readFileSync(new URL("../../src/data/amici.ts", import.meta.url), "utf8");
+    const una = scriviGusti(sorgente, { cristina: "pistacchio", cice: "fragola" });
+    expect(una).toContain('{ id: "cristina", nome: "Cristina", gusto: "pistacchio",');
+    expect(una).toContain('{ id: "cice", nome: "Cice", gusto: "fragola",');
+    const due = scriviGusti(una, { cristina: "nocciola" });
+    expect(due).toContain('{ id: "cristina", nome: "Cristina", gusto: "nocciola",');
+    expect(due.split("\n").length).toBe(sorgente.split("\n").length);
+    expect(() => scriviGusti(sorgente, { nessuno: "fragola" })).toThrow("amico non trovato");
   });
 });

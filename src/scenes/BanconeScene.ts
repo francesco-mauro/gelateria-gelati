@@ -116,6 +116,7 @@ export class BanconeScene extends Phaser.Scene {
   private testoAiuto!: Phaser.GameObjects.Text;
   private evidenzia!: Phaser.GameObjects.Graphics;
   private bottiglie = new Map<string, Phaser.GameObjects.Graphics>();
+  private vaschetteDisegnate: { g: Phaser.GameObjects.Graphics; testo: Phaser.GameObjects.Text; zona: Zona }[] = [];
 
   // i gesti in corso
   private trascinata?: { gusto: string; g: Phaser.GameObjects.Graphics; da: { x: number; y: number }; mosso: number; dito: number };
@@ -227,12 +228,39 @@ export class BanconeScene extends Phaser.Scene {
     });
 
     // in basso: le vaschette, due file da quattro
-    this.partita.vaschette.forEach((id, i) => {
+    // ognuna con la sua grafica e la sua zona, perché può cambiare gusto quando arriva un amico che lo preferisce
+    this.vaschetteDisegnate = this.partita.vaschette.map((id, i) => {
       const x = 45 + (i % 4) * 90;
       const y = this.H - 112 + Math.floor(i / 4) * 66;
-      disegnaVaschetta(g, id, x, y);
-      scritta(this, x, y + 30, gusto(id).nome, 12).setDepth(12);
-      this.zone.push({ nome: `vaschetta:${id}`, x, y: y + 4, w: 88, h: 64 });
+      const vg = this.add.graphics().setDepth(12).setPosition(x, y);
+      disegnaVaschetta(vg, id, 0, 0);
+      const testo = scritta(this, x, y + 30, gusto(id).nome, 12).setDepth(12);
+      const zona: Zona = { nome: `vaschetta:${id}`, x, y: y + 4, w: 88, h: 64 };
+      this.zone.push(zona);
+      return { g: vg, testo, zona };
+    });
+  }
+
+  // Una vaschetta cambia gusto: si chiude, cambia e si riapre, con un luccichio.
+  private cambiaVaschetta(c: NonNullable<Cliente["cambio"]>): void {
+    const v = this.vaschetteDisegnate[c.indice];
+    v.zona.nome = `vaschetta:${c.a}`;
+    this.tweens.add({
+      targets: [v.g, v.testo],
+      scaleY: 0,
+      duration: 140,
+      ease: "Quad.in",
+      onComplete: () => {
+        v.g.clear();
+        disegnaVaschetta(v.g, c.a, 0, 0);
+        v.testo.setText(gusto(c.a).nome);
+        this.tweens.add({ targets: [v.g, v.testo], scaleY: 1, duration: 220, ease: "Back.out" });
+        const luce = this.add.graphics().setDepth(13);
+        luce.fillStyle(0xffffff, 0.8);
+        luce.fillCircle(v.zona.x + 26, v.zona.y - 22, 4);
+        luce.fillCircle(v.zona.x - 28, v.zona.y - 14, 3);
+        this.tweens.add({ targets: luce, alpha: 0, y: -10, duration: 600, onComplete: () => luce.destroy() });
+      },
     });
   }
 
@@ -259,6 +287,7 @@ export class BanconeScene extends Phaser.Scene {
     this.cliente = c;
     this.tempo = c.pazienza;
     this.fase = "arrivo";
+    if (c.cambio !== undefined) this.cambiaVaschetta(c.cambio);
     this.amico?.contenitore.destroy();
     const yTesta = this.yBanco - 78;
     this.amico = creaAmico(this, c.amico, LARGO + 60, yTesta);

@@ -17,8 +17,11 @@ Punti: 50 per pezzo più fino a 100 per la fretta, per la serie di clienti giust
 Le prime tre volte compaiono gli aiuti sul bancone.
 
 ## Da completare
-- `src/data/amici.ts`: il campo `gusto` di ogni amico (il preferito). Finché manca, l'amico ordina gusti a caso.
-  Se il gusto non c'è in `src/data/gusti.ts`, una riga lì. Sul bancone ci stanno otto vaschette: prima i preferiti.
+- I gusti preferiti: le risposte degli amici, incollate in un file di testo una per riga («Cristina: pistacchio»),
+  passano da `node tools/gusti.ts RISPOSTE.txt` (mostra cosa ha capito) e poi con `--scrivi` finiscono nel campo
+  `gusto` di `src/data/amici.ts`. Finché manca, l'amico ordina gusti a caso. Ci sono 40 gusti; uno che manca va
+  aggiunto in `src/data/gusti.ts`. Sul bancone ci stanno otto vaschette: se i preferiti sono di più, una vaschetta
+  cambia gusto quando arriva l'amico che lo preferisce, così ognuno ordina sempre il suo.
 - `src/data/amici.ts`: l'aspetto (capelli, maglia, occhiali, barba) è un segnaposto, non com'è davvero ognuno.
 - `src/data/testi.ts`: tutte le scritte; `dedica` è l'unica frase a nome di Francesco.
 
@@ -27,8 +30,9 @@ Le prime tre volte compaiono gli aiuti sul bancone.
 |---|---|
 | Provare in locale | `npm run dev` |
 | Controlli (lint, tipi, prove) | `npm run check` |
-| Prove nel browser | `npm run test:e2e` |
+| Prove nel browser (Chrome alto e piccolo, Safari iPhone) | `npm run test:e2e` |
 | Pubblicare su Cloudflare | `npm run deploy` |
+| Gusti degli amici dalle risposte | `node tools/gusti.ts RISPOSTE.txt [--scrivi]` |
 | Bigliettino col QR | `node tools/bigliettino.ts URL CARTELLA` |
 | Foto in formato telefono | `node tools/foto.ts CARTELLA` (con `npm run preview` acceso) |
 | Giocare 8 clienti e stampare l'esito | `node tools/diagnosi.ts 8` (con `npm run preview` acceso) |

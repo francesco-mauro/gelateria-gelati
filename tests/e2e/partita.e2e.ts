@@ -70,7 +70,8 @@ async function servi(page: Page): Promise<{ giusto: boolean; condimento?: string
 }
 
 test("sei clienti serviti giusti con i gesti veri, salse e granella comprese", async ({ page }) => {
-  test.setTimeout(120000);
+  // su Chewi il WebGL senza schermo di Chromium è lento: otto clienti ci mettono un minuto e mezzo
+  test.setTimeout(240000);
   const errori = osservaErrori(page);
   await apri(page);
   const visti = new Set<string>();
@@ -122,7 +123,9 @@ test("la salsa lasciata nel verde è perfetta, toccata appena non conta", async 
   expect(errori).toEqual([]);
 });
 
-test("un secondo dito che si alza non interrompe la pallina trascinata", async ({ page }) => {
+test("un secondo dito che si alza non interrompe la pallina trascinata", async ({ page, browserName }) => {
+  // i tocchi a più dita si mandano con CDP, che c'è solo in Chromium
+  test.skip(browserName !== "chromium", "tocchi a più dita solo con Chromium");
   const errori = osservaErrori(page);
   await apri(page);
   const s = await stato(page);
@@ -147,7 +150,7 @@ test("un secondo dito che si alza non interrompe la pallina trascinata", async (
 });
 
 test("tre gelati sbagliati chiudono la gelateria, il record resta e si riapre", async ({ page }) => {
-  test.setTimeout(90000);
+  test.setTimeout(180000);
   const errori = osservaErrori(page);
   await apri(page);
   // prima uno giusto, per avere dei punti
@@ -191,5 +194,30 @@ test("con un dito vero: tocchi sul telefono per base e granella", async ({ page 
   const b = await dove(page, s.ordine!.base);
   await page.touchscreen.tap(b.x, b.y);
   await expect.poll(async () => (await stato(page)).gelato.base).toBe(s.ordine!.base);
+  expect(errori).toEqual([]);
+});
+
+test("una vaschetta che cambia gusto si prende col nuovo nome", async ({ page }) => {
+  const errori = osservaErrori(page);
+  await apri(page);
+  const s = await stato(page);
+  const via = s.vaschette[0];
+  const nuovo = "mango";
+  // il cambio che fa la partita quando arriva un amico col gusto che manca: qui chiamato a mano sul bancone
+  await page.evaluate(
+    ([da, a]) => {
+      const scena = window.giocoProva!.scene.getScene("Bancone") as unknown as {
+        partita: { vaschette: string[] };
+        cambiaVaschetta: (c: { indice: number; da: string; a: string }) => void;
+      };
+      scena.partita.vaschette[0] = a;
+      scena.cambiaVaschetta({ indice: 0, da, a });
+    },
+    [via, nuovo],
+  );
+  await page.waitForTimeout(500);
+  await tocca(page, s.ordine!.base);
+  await trascina(page, `vaschetta:${nuovo}`, "attacco");
+  expect((await stato(page)).gelato.palline).toEqual([nuovo]);
   expect(errori).toEqual([]);
 });
