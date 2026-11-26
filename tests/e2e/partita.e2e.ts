@@ -66,10 +66,20 @@ async function servi(page: Page): Promise<{ giusto: boolean; condimento?: string
   await page.mouse.down();
   await page.mouse.move(g.x, g.y - 120, { steps: 8 });
   await page.mouse.up();
+  // si aspetta che cambi il conto dei serviti o dei cuori, che non torna indietro: «non più in attesa» non basta,
+  // perché su un computer carico tra due controlli il cliente se ne va e il prossimo è già in attesa
+  const [serviti, cuori] = [prima.serviti, prima.cuori];
   try {
-    await page.waitForFunction(() => window.banconeProva!.stato().fase !== "attesa", undefined, { timeout: 15000 });
+    await page.waitForFunction(
+      ([sv, cu]) => {
+        const x = window.banconeProva!.stato();
+        return x.serviti !== sv || x.cuori !== cu;
+      },
+      [serviti, cuori],
+      { timeout: 15000 },
+    );
   } catch (e) {
-    // se il gelato non parte, lo stato e una foto per capire perché (succede solo con il computer molto carico)
+    // se il gelato non parte, lo stato e una foto per capire perché
     console.log("DIAG ordine", JSON.stringify(o), "prima", JSON.stringify(prima.gelato), "zona", JSON.stringify(g), "ora", JSON.stringify(await stato(page)));
     await page.screenshot({ path: "test-results/diag.png" });
     throw e;
@@ -174,17 +184,25 @@ test("tre gelati sbagliati chiudono la gelateria, il record resta e si riapre", 
     await page.mouse.down();
     await page.mouse.move(g.x, g.y - 120, { steps: 8 });
     await page.mouse.up();
-    await page.waitForFunction(() => window.banconeProva!.stato().fase !== "attesa");
-    expect((await stato(page)).ultimoVoto!.giusto).toBe(false);
+    // un cuore in meno (al terzo il bancone chiude e banconeProva sparisce: conta come zero cuori)
+    await page.waitForFunction((c) => (window.banconeProva?.stato().cuori ?? 0) < c, s.cuori);
+    expect(await page.evaluate(() => window.banconeProva?.stato().cuori ?? 0)).toBe(s.cuori - 1);
   }
   // subito dopo la chiusura i tocchi non contano (così non si saltano i punti per sbaglio): il tocco parte appena
   // la schermata finale c'è, prima di qualunque altra lettura
   await page.waitForFunction(() => window.fineProva !== undefined);
-  const r = await page.evaluate(() => window.fineProva!.schermo("rigioca"));
+  // una lettura sola, record compreso, così il tocco parte subito
+  const { r, fine } = await page.evaluate(() => ({
+    r: window.fineProva!.schermo("rigioca"),
+    fine: { nuovo: window.fineProva!.nuovoRecord, record: window.fineProva!.record },
+  }));
   await page.mouse.click(r.x, r.y);
+  // quanto era passato quando il tocco è finito: se meno di 700 ms, la schermata deve essere ancora lì (su un computer
+  // lento il tocco può arrivare dopo, e allora vale il rigioca)
+  const passati = await page.evaluate(() => performance.now() - window.fineProva!.apertaAlle);
   await page.waitForTimeout(150);
-  expect(await page.evaluate(() => window.giocoProva!.scene.isActive("Fine"))).toBe(true);
-  const fine = await page.evaluate(() => ({ nuovo: window.fineProva!.nuovoRecord, record: window.fineProva!.record }));
+  const ancoraFine = await page.evaluate(() => window.giocoProva!.scene.isActive("Fine"));
+  expect(passati >= 700 || ancoraFine).toBe(true);
   expect(fine.nuovo).toBe(true);
   expect(fine.record).toBeGreaterThan(0);
   const salvato = await page.evaluate(() => JSON.parse(localStorage.getItem("gelateria-gelati") ?? "{}"));

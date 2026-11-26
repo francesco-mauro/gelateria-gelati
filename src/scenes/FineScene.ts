@@ -15,7 +15,7 @@ export interface DatiFine {
 
 declare global {
   interface Window {
-    fineProva?: { nuovoRecord: boolean; record: number; schermo(nome: "rigioca" | "titolo"): { x: number; y: number } };
+    fineProva?: { nuovoRecord: boolean; record: number; apertaAlle: number; schermo(nome: "rigioca" | "titolo"): { x: number; y: number } };
   }
 }
 
@@ -94,6 +94,7 @@ export class FineScene extends Phaser.Scene {
       window.fineProva = {
         nuovoRecord: nuovo,
         record,
+        apertaAlle: pronto - 700,
         schermo: (nome) => {
           const cam = this.cameras.main;
           const r = this.game.canvas.getBoundingClientRect();
