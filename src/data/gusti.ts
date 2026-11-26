@@ -1,6 +1,5 @@
 // I gusti della gelateria: nome sul biglietto, colore della pallina, colore dei puntini (per distinguerli anche a chi
-// confonde i colori), tutti in una riga. Un gusto nuovo, quando arrivano le risposte degli amici: una riga qui, poi
-// il nome del gusto in src/data/amici.ts. Sul bancone ci stanno al massimo OTTO vaschette (due file da quattro).
+// confonde i colori), tutti in una riga. Sul bancone ci stanno al massimo OTTO vaschette (due file da quattro).
 export interface Gusto {
   id: string;
   nome: string;

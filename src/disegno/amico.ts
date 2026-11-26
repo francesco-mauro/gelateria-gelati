@@ -36,6 +36,30 @@ function capelliDavanti(g: Phaser.GameObjects.Graphics, a: Amico): void {
   else g.fillEllipse(-r * 0.15, -r * 0.45, r * 1.7, r * 0.55);
 }
 
+// Berretto di lana con il risvolto e la toppa (Gilberto), o cappellino con la visiera (Paolo).
+function cappello(g: Phaser.GameObjects.Graphics, a: Amico): void {
+  if (a.cappello === undefined) return;
+  const r = R_TESTA;
+  const { tipo, colore } = a.cappello;
+  const scuro = Phaser.Display.Color.ValueToColor(colore).darken(18).color;
+  g.fillStyle(colore, 1);
+  if (tipo === "berretto") {
+    g.slice(0, -r * 0.46, r * 1.06, Math.PI, 0, false);
+    g.fillPath();
+    g.fillEllipse(0, -r * 1.32, r * 1.5, r * 0.6);
+    g.fillStyle(scuro, 1);
+    g.fillRoundedRect(-r * 1.1, -r * 0.66, r * 2.2, r * 0.32, 7);
+    g.fillStyle(0xb07a45, 1);
+    g.fillRoundedRect(-r * 0.16, -r * 0.62, r * 0.32, r * 0.24, 3);
+    return;
+  }
+  g.slice(0, -r * 0.36, r * 1.02, Math.PI, 0, false);
+  g.fillPath();
+  g.fillStyle(scuro, 1);
+  g.fillEllipse(0, -r * 0.36, r * 2.5, r * 0.34);
+  g.fillCircle(0, -r * 1.36, r * 0.1);
+}
+
 export function disegnaFaccia(g: Phaser.GameObjects.Graphics, a: Amico, umore: Umore): void {
   g.clear();
   const r = R_TESTA;
@@ -114,6 +138,7 @@ export function creaAmico(scene: Phaser.Scene, a: Amico, x: number, y: number): 
     corpo.fillEllipse(0, r * 0.42, r * 0.8, r * 0.36);
   }
   capelliDavanti(corpo, a);
+  cappello(corpo, a);
   const faccia = scene.add.graphics();
   disegnaFaccia(faccia, a, "normale");
   const nome = scritta(scene, 0, r * 1.75, a.nome, 15, COLORI.bianco, { stroke: "#4a2c3a", strokeThickness: 5 });
