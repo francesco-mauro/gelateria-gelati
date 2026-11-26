@@ -5,8 +5,8 @@
 // - `gusto`: il gusto preferito che ognuno gli dice in privato. Finché manca (undefined) l'amico ordina gusti a caso.
 //   Il nome deve stare in src/data/gusti.ts (se non c'è, una riga lì).
 // - `capelli`, `stile`, `pelle`, `occhiali`, `barba`: dal 26 novembre 2026 sera presi dalle foto di Drive (cartelle
-//   per persona confermate da Francesco, più le foto di Cristina e Gaia che ha mandato in chat). Ancora segnaposto:
-//   Enza, Gilberto, Marco. Le magliette restano colori scelti per distinguerli. Si cambia qui, un amico per riga.
+//   per persona confermate da Francesco, più le foto di Cristina, Gaia, Francesca e Marco che ha mandato in chat). Ancora segnaposto:
+//   Enza e Gilberto. Le magliette restano colori scelti per distinguerli. Si cambia qui, un amico per riga.
 import type { Condimento } from "../logic/ordine";
 
 // I gusti dalle risposte su WhatsApp del 26 novembre 2026 («metti i gusti nel gioco», Francesco alle 14:46).
@@ -45,7 +45,7 @@ export const AMICI: readonly Amico[] = [
   { id: "gilberto", nome: "Gilberto", gusto: "crema", altri: ["fragola"], capelli: 0x2b2b2b, stile: "corti", pelle: MEDIA, barba: true, maglia: 0x3c6e9e },
   { id: "matteo", nome: "Matteo", gusto: "tiramisu", altri: ["stracciatella"], capelli: 0x2a1f18, stile: "corti", pelle: CHIARA, occhiali: true, barba: true, maglia: 0x6c8a3a },
   { id: "francesca", nome: "Francesca", gusto: "cocco", altri: ["cioccolato"], capelli: 0x6b4a32, stile: "caschetto", pelle: CHIARA, maglia: 0xd4574f },
-  { id: "marco", nome: "Marco", gusto: "cioccolato", altri: ["limone"], capelli: 0x241a14, stile: "rasati", pelle: DORATA, barba: true, maglia: 0x2f8f8f },
+  { id: "marco", nome: "Marco", gusto: "cioccolato", altri: ["limone"], capelli: 0x1a1410, stile: "rasati", pelle: CHIARA, occhiali: true, barba: true, maglia: 0x2f8f8f },
   { id: "paolo", nome: "Paolo", gusto: "cremino", altri: ["nocciola", "pistacchio"], capelli: 0x2a1f18, stile: "rasati", pelle: CHIARA, occhiali: true, barba: true, maglia: 0x5b5fc7 },
   { id: "francesco", nome: "Francesco", gusto: "pistacchio", altri: ["nutella"], capelli: 0x2a1f18, stile: "corti", pelle: CHIARA, maglia: 0x1f2a44 },
 ];
