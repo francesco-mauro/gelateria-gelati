@@ -44,7 +44,7 @@ export const AMICI: readonly Amico[] = [
   { id: "aurora", nome: "Aurora", gusto: "crema", altri: ["caffe"], capelli: 0x5a1f22, stile: "ricci", pelle: CHIARA, occhiali: true, maglia: 0xe86fa8 },
   { id: "gilberto", nome: "Gilberto", gusto: "crema", altri: ["fragola"], capelli: 0x2b2b2b, stile: "corti", pelle: MEDIA, barba: true, maglia: 0x3c6e9e },
   { id: "matteo", nome: "Matteo", gusto: "tiramisu", altri: ["stracciatella"], capelli: 0x2a1f18, stile: "corti", pelle: CHIARA, occhiali: true, barba: true, maglia: 0x6c8a3a },
-  { id: "francesca", nome: "Francesca", gusto: "cocco", altri: ["cioccolato"], capelli: 0x8a6a4a, stile: "caschetto", pelle: CHIARA, maglia: 0xd4574f },
+  { id: "francesca", nome: "Francesca", gusto: "cocco", altri: ["cioccolato"], capelli: 0x6b4a32, stile: "caschetto", pelle: CHIARA, maglia: 0xd4574f },
   { id: "marco", nome: "Marco", gusto: "cioccolato", altri: ["limone"], capelli: 0x241a14, stile: "rasati", pelle: DORATA, barba: true, maglia: 0x2f8f8f },
   { id: "paolo", nome: "Paolo", gusto: "cremino", altri: ["nocciola", "pistacchio"], capelli: 0x2a1f18, stile: "rasati", pelle: CHIARA, occhiali: true, barba: true, maglia: 0x5b5fc7 },
   { id: "francesco", nome: "Francesco", gusto: "pistacchio", altri: ["nutella"], capelli: 0x2a1f18, stile: "corti", pelle: CHIARA, maglia: 0x1f2a44 },
