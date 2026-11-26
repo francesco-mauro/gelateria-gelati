@@ -12,7 +12,7 @@ import type { Condimento } from "../logic/ordine";
 // `gusto` è il primo che hanno detto (cambia la vaschetta, c'è sempre nell'ordine), `altri` gli altri.
 // Gaia: «yogurt e caffè di solito», poi «sì caffè decisamente», quindi caffè prima. Paolo: «Cremino Rivareno,
 // nocciola e pistacchio». Matteo: «stracciatella alla Nutella» resa con stracciatella. Gilberto: dal vocale Whisper
-// capisce «crema e fegna», crema è da confermare e il secondo gusto manca. Luca e Cice: ancora a caso. Francesco alle 15:08: «il mio gusto è pistacchio e nutella».
+// capisce «crema e fegna»; Francesco alle 15:37: «il gusto di Gilberto è crema e fragola». Luca e Cice: ancora a caso. Francesco alle 15:08: «il mio gusto è pistacchio e nutella».
 // `condimento`: quello che l'amico vuole sempre. Dede: «per me più che il gelato è importante la doppia panna»
 // (a Francesco, 26 novembre 2026; lui alle 12:24: «sì, aggiungi la panna per Dede»).
 export type Stile = "corti" | "lunghi" | "raccolti" | "ricci" | "caschetto" | "rasati";
@@ -42,7 +42,7 @@ export const AMICI: readonly Amico[] = [
   { id: "cice", nome: "Cice", capelli: 0xc98a3c, stile: "caschetto", pelle: CHIARA, maglia: 0x46b58a },
   { id: "enza", nome: "Enza", gusto: "menta", altri: ["vaniglia"], capelli: 0x2a1d16, stile: "lunghi", pelle: DORATA, maglia: 0xf2a33a },
   { id: "aurora", nome: "Aurora", gusto: "crema", altri: ["caffe"], capelli: 0x8a4b2a, stile: "ricci", pelle: CHIARA, maglia: 0xe86fa8 },
-  { id: "gilberto", nome: "Gilberto", gusto: "crema", capelli: 0x2b2b2b, stile: "corti", pelle: MEDIA, barba: true, maglia: 0x3c6e9e },
+  { id: "gilberto", nome: "Gilberto", gusto: "crema", altri: ["fragola"], capelli: 0x2b2b2b, stile: "corti", pelle: MEDIA, barba: true, maglia: 0x3c6e9e },
   { id: "matteo", nome: "Matteo", gusto: "tiramisu", altri: ["stracciatella"], capelli: 0x4a3222, stile: "corti", pelle: CHIARA, occhiali: true, maglia: 0x6c8a3a },
   { id: "francesca", nome: "Francesca", gusto: "cocco", altri: ["cioccolato"], capelli: 0x6b4630, stile: "caschetto", pelle: MEDIA, occhiali: true, maglia: 0xd4574f },
   { id: "marco", nome: "Marco", gusto: "cioccolato", altri: ["limone"], capelli: 0x241a14, stile: "rasati", pelle: DORATA, barba: true, maglia: 0x2f8f8f },
