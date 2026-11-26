@@ -12,7 +12,7 @@ import type { Condimento } from "../logic/ordine";
 // `gusto` è il primo che hanno detto (cambia la vaschetta, c'è sempre nell'ordine), `altri` gli altri.
 // Gaia: «yogurt e caffè di solito», poi «sì caffè decisamente», quindi caffè prima. Paolo: «Cremino Rivareno,
 // nocciola e pistacchio». Matteo: «stracciatella alla Nutella» resa con stracciatella. Gilberto: dal vocale Whisper
-// capisce «crema e fegna»; Francesco alle 15:37: «il gusto di Gilberto è crema e fragola». Luca e Cice: ancora a caso. Francesco alle 15:08: «il mio gusto è pistacchio e nutella».
+// capisce «crema e fegna»; Francesco alle 15:37: «il gusto di Gilberto è crema e fragola». Cice: ancora a caso. Luca tolto dalla lista il 26 novembre alle 20:49, su richiesta di Francesco. Francesco alle 15:08: «il mio gusto è pistacchio e nutella».
 // `condimento`: quello che l'amico vuole sempre. Dede: «per me più che il gelato è importante la doppia panna»
 // (a Francesco, 26 novembre 2026; lui alle 12:24: «sì, aggiungi la panna per Dede»).
 export type Stile = "corti" | "lunghi" | "raccolti" | "ricci" | "caschetto" | "rasati";
@@ -46,7 +46,6 @@ export const AMICI: readonly Amico[] = [
   { id: "matteo", nome: "Matteo", gusto: "tiramisu", altri: ["stracciatella"], capelli: 0x4a3222, stile: "corti", pelle: CHIARA, occhiali: true, maglia: 0x6c8a3a },
   { id: "francesca", nome: "Francesca", gusto: "cocco", altri: ["cioccolato"], capelli: 0x6b4630, stile: "caschetto", pelle: MEDIA, occhiali: true, maglia: 0xd4574f },
   { id: "marco", nome: "Marco", gusto: "cioccolato", altri: ["limone"], capelli: 0x241a14, stile: "rasati", pelle: DORATA, barba: true, maglia: 0x2f8f8f },
-  { id: "luca", nome: "Luca", capelli: 0x7a5233, stile: "corti", pelle: CHIARA, maglia: 0xc77d2e },
   { id: "paolo", nome: "Paolo", gusto: "cremino", altri: ["nocciola", "pistacchio"], capelli: 0x3a2a1e, stile: "rasati", pelle: MEDIA, occhiali: true, maglia: 0x5b5fc7 },
   { id: "francesco", nome: "Francesco", gusto: "pistacchio", altri: ["nutella"], capelli: 0x2a1f18, stile: "corti", pelle: CHIARA, barba: true, maglia: 0x1f2a44 },
 ];

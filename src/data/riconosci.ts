@@ -26,7 +26,6 @@ const ALIAS_AMICI: Record<string, string[]> = {
   matteo: ["fraulin"],
   francesca: ["bevilacqua"],
   marco: ["fioravanti"],
-  luca: ["pathfinder"],
   paolo: ["ferrante"],
   francesco: ["io", "me"],
 };

@@ -114,8 +114,8 @@ test("Dede ordina la doppia panna: la granella diventa panna e poi torna", async
   test.setTimeout(300000);
   const errori = osservaErrori(page);
   await apri(page);
-  // tutti gli amici passano prima che uno torni: Dede arriva entro tredici clienti
-  for (let i = 0; i < 13 && (await stato(page)).amico !== "dede"; i++) {
+  // tutti gli amici passano prima che uno torni: Dede arriva entro dodici clienti
+  for (let i = 0; i < 12 && (await stato(page)).amico !== "dede"; i++) {
     expect((await stato(page)).ordine!.condimento).not.toBe("panna");
     const r = await servi(page);
     expect(r.giusto).toBe(true);
