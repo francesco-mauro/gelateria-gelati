@@ -1,0 +1,9 @@
+// La configurazione di Cloudflare: pubblica solo la build (dist), niente codice sul server.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "gelateria-gelati",
+  "compatibility_date": "2026-11-20",
+  "assets": {
+    "directory": "./dist"
+  }
+}

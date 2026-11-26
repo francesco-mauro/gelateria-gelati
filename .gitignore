@@ -1,0 +1,13 @@
+# librerie: si rifanno con npm install
+node_modules/
+# la build: la rifà vite build
+dist/
+# cache di Cloudflare
+.wrangler/
+# la prova di fumo di Playwright
+test-results/
+playwright-report/
+# copie compilate di Python
+__pycache__/
+# i risultati che vitest si tiene tra una corsa e l'altra
+.vitest/

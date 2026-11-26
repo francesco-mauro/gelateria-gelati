@@ -1,0 +1,31 @@
+{
+  "name": "gelateria-gelati",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "deploy": "npm run build && wrangler deploy",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:e2e": "npm run build && playwright test",
+    "lint": "oxlint --deny-warnings",
+    "check": "npm run lint && npm run typecheck && npm test",
+    "bigliettino": "node tools/bigliettino.ts"
+  },
+  "dependencies": {
+    "phaser": "4.2.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.1",
+    "@types/node": "24.10.1",
+    "oxlint": "1.91.0",
+    "qrcode": "1.5.4",
+    "typescript": "7.0.2",
+    "vite": "8.3.6",
+    "vitest": "5.1.0",
+    "wrangler": "4.157.0"
+  }
+}
