@@ -48,6 +48,21 @@ export function disegnaGranellaBarattolo(g: Phaser.GameObjects.Graphics, x: numb
   for (let i = -1; i <= 1; i++) g.fillCircle(x + i * 8, y - 20, 1.8);
 }
 
+// La bomboletta della panna, stessa misura del barattolo della granella.
+export function disegnaBomboletta(g: Phaser.GameObjects.Graphics, x: number, y: number): void {
+  g.fillStyle(0xe9f1f7, 1);
+  g.fillRoundedRect(x - 14, y - 16, 28, 40, 7);
+  g.fillStyle(0x7fb7e0, 1);
+  g.fillRect(x - 14, y - 2, 28, 10);
+  g.fillStyle(0xffffff, 1);
+  g.fillCircle(x - 4, y + 3, 3);
+  g.fillCircle(x + 3, y + 2, 2.5);
+  g.fillStyle(0xb0b8bf, 1);
+  g.fillRoundedRect(x - 9, y - 22, 18, 8, 3);
+  g.fillStyle(0xe0565b, 1);
+  g.fillRoundedRect(x - 4, y - 34, 8, 13, 3);
+}
+
 export function disegnaCestino(g: Phaser.GameObjects.Graphics, x: number, y: number): void {
   g.fillStyle(0x9aa5ad, 1);
   g.fillPoints(

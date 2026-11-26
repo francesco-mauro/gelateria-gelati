@@ -110,6 +110,23 @@ export function disegnaGranella(g: Phaser.GameObjects.Graphics, x: number, yCima
   }
 }
 
+// La panna sopra la pallina più alta: un ciuffo a tocco, il secondo più piccolo sopra il primo.
+export function disegnaPanna(g: Phaser.GameObjects.Graphics, x: number, yCima: number, tocchi: number, s = 1): void {
+  for (let i = 0; i < Math.min(tocchi, 2); i++) {
+    const r = (i === 0 ? 17 : 12) * s;
+    const y = yCima - i * 16 * s;
+    g.fillStyle(0x000000, 0.06);
+    g.fillCircle(x + 2 * s, y + 2 * s, r);
+    g.fillStyle(0xfffdf8, 1);
+    g.fillCircle(x - r * 0.55, y + r * 0.2, r * 0.6);
+    g.fillCircle(x + r * 0.55, y + r * 0.2, r * 0.6);
+    g.fillCircle(x, y - r * 0.15, r * 0.75);
+    g.fillTriangle(x - r * 0.35, y - r * 0.6, x + r * 0.35, y - r * 0.6, x + r * 0.1, y - r * 1.25);
+    g.lineStyle(1.5 * s, 0xe6dccb, 1);
+    g.strokeCircle(x, y - r * 0.15, r * 0.75);
+  }
+}
+
 // Il gelato intero: attacco in (x, y).
 export function disegnaGelato(
   g: Phaser.GameObjects.Graphics,
@@ -128,6 +145,7 @@ export function disegnaGelato(
   gel.palline.forEach((p, i) => disegnaPallina(g, p, x, y + centroPallina(i)));
   const cima = gel.palline.length === 0 ? y : y + centroPallina(gel.palline.length - 1);
   if (gel.condimento === "granella") disegnaGranella(g, x, cima - RAGGIO_PALLINA * 0.6, gel.tocchiGranella);
+  else if (gel.condimento === "panna") disegnaPanna(g, x, cima - RAGGIO_PALLINA * 0.75, gel.tocchiPanna ?? 0);
   else if (gel.condimento !== undefined) disegnaSalsa(g, coloreCondimento(gel.condimento), x, cima - RAGGIO_PALLINA * 0.3, 1);
   else if (salsaInCorso !== undefined) disegnaSalsa(g, salsaInCorso.colore, x, cima - RAGGIO_PALLINA * 0.3, salsaInCorso.quanto);
 }

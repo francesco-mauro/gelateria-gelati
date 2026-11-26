@@ -16,6 +16,7 @@ const giusto = (o: Ordine, extra: Partial<Gelato> = {}): Gelato => ({
   palline: [...o.palline],
   condimento: o.condimento,
   tocchiGranella: o.condimento === "granella" ? 3 : 0,
+  tocchiPanna: o.condimento === "panna" ? 2 : 0,
   qualita: o.condimento?.startsWith("salsa") ? "perfetta" : undefined,
   ...extra,
 });
@@ -91,6 +92,22 @@ describe("ordine e confronto", () => {
     const o: Ordine = { base: "cono", palline: ["fragola"], condimento: "granella" };
     expect(confronta(o, giusto(o, { tocchiGranella: 2 }))).toEqual(["condimento"]);
     expect(confronta(o, giusto(o, { tocchiGranella: 3 }))).toEqual([]);
+  });
+  it("la panna vale solo con due tocchi", () => {
+    const o: Ordine = { base: "coppetta", palline: ["nocciola"], condimento: "panna" };
+    expect(confronta(o, giusto(o, { tocchiPanna: 1 }))).toEqual(["condimento"]);
+    expect(confronta(o, giusto(o, { tocchiPanna: 2 }))).toEqual([]);
+  });
+  it("Dede ordina sempre la doppia panna, nessun altro la ordina mai", () => {
+    const p = new Partita(casoConSeme(21));
+    for (let i = 0; i < 60; i++) {
+      const c = p.prossimoCliente();
+      expect(c.ordine.condimento === "panna").toBe(c.amico.id === "dede");
+    }
+  });
+  it("la doppia panna conta per la terza stella come la granella", () => {
+    const o: Ordine = { base: "cono", palline: ["nocciola"], condimento: "panna" };
+    expect(vota(o, giusto(o), 0.9, 0).stelle).toBe(3);
   });
   it("una pallina in più è un errore", () => {
     const o: Ordine = { base: "cono", palline: ["fragola"] };

@@ -31,6 +31,11 @@ for (let i = 0; i < n; i++) {
       p = await dove("granella");
       await page.mouse.click(p.x, p.y);
     }
+  else if (o.condimento === "panna")
+    for (let k = 0; k < 2; k++) {
+      p = await dove("panna");
+      await page.mouse.click(p.x, p.y);
+    }
   else if (o.condimento !== undefined) {
     p = await dove(o.condimento);
     await page.mouse.move(p.x, p.y);

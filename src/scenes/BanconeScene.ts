@@ -14,11 +14,12 @@ import { suona, vibra } from "../audio/suoni";
 import { gusto } from "../data/gusti";
 import { TESTI } from "../data/testi";
 import { creaAmico, R_TESTA, type AmicoDisegnato } from "../disegno/amico";
-import { centroPallina, coloreCondimento, disegnaBase, disegnaGelato, disegnaPallina } from "../disegno/gelato";
+import { centroPallina, coloreCondimento, disegnaBase, disegnaGelato, disegnaPallina, disegnaPanna } from "../disegno/gelato";
 import {
   disegnaBottiglia,
   disegnaCestino,
   disegnaCuore,
+  disegnaBomboletta,
   disegnaGranellaBarattolo,
   disegnaMuro,
   disegnaStella,
@@ -38,6 +39,8 @@ import {
   type Base,
   type Condimento,
   type Gelato,
+  TOCCHI_PANNA,
+  condimentoFatto,
 } from "../logic/ordine";
 import { Partita, type Cliente } from "../logic/partita";
 import type { Voto } from "../logic/voto";
@@ -117,6 +120,8 @@ export class BanconeScene extends Phaser.Scene {
   private testoAiuto!: Phaser.GameObjects.Text;
   private evidenzia!: Phaser.GameObjects.Graphics;
   private bottiglie = new Map<string, Phaser.GameObjects.Graphics>();
+  // il terzo posto a destra: la granella, o la panna quando al bancone c'è chi la vuole
+  private terzo?: { tipo: "granella" | "panna"; g: Phaser.GameObjects.Graphics; testo: Phaser.GameObjects.Text; zona: Zona };
   private vaschetteDisegnate: { g: Phaser.GameObjects.Graphics; testo: Phaser.GameObjects.Text; zona: Zona }[] = [];
 
   // i gesti in corso
@@ -227,8 +232,10 @@ export class BanconeScene extends Phaser.Scene {
       else disegnaBottiglia(bg, coloreCondimento(c), 0, 0);
       bg.setPosition(xd, y - 8);
       this.bottiglie.set(c, bg);
-      scritta(this, xd, y + 25, TESTI.bottiglie[c], 12).setDepth(12);
-      this.zone.push({ nome: c, x: xd, y, w: 84, h: hz });
+      const testo = scritta(this, xd, y + 25, TESTI.bottiglie[c], 12).setDepth(12);
+      const zona = { nome: c, x: xd, y, w: 84, h: hz };
+      this.zone.push(zona);
+      if (c === "granella") this.terzo = { tipo: "granella", g: bg, testo, zona };
     });
 
     // in basso: le vaschette, due file da quattro
@@ -268,6 +275,23 @@ export class BanconeScene extends Phaser.Scene {
     });
   }
 
+  // Granella o panna al terzo posto di destra, con lo stesso luccichio della vaschetta che cambia.
+  private mettiTerzo(tipo: "granella" | "panna"): void {
+    const t = this.terzo;
+    if (t === undefined || t.tipo === tipo) return;
+    this.bottiglie.delete(t.tipo);
+    t.tipo = tipo;
+    t.g.clear();
+    if (tipo === "granella") disegnaGranellaBarattolo(t.g, 0, 0);
+    else disegnaBomboletta(t.g, 0, 0);
+    this.bottiglie.set(tipo, t.g);
+    t.testo.setText(TESTI.bottiglie[tipo]);
+    t.zona.nome = tipo;
+    this.tweens.killTweensOf(t.g);
+    t.g.setScale(0.2);
+    this.tweens.add({ targets: t.g, scale: 1, duration: 320, ease: "Back.out" });
+  }
+
   private aggiornaTesta(): void {
     const g = this.testa;
     g.clear();
@@ -292,6 +316,7 @@ export class BanconeScene extends Phaser.Scene {
     this.tempo = c.pazienza;
     this.fase = "arrivo";
     if (c.cambio !== undefined) this.cambiaVaschetta(c.cambio);
+    this.mettiTerzo(c.ordine.condimento === "panna" ? "panna" : "granella");
     this.amico?.contenitore.destroy();
     const yTesta = this.yBanco - 78;
     this.amico = creaAmico(this, c.amico, LARGO + 60, yTesta);
@@ -357,9 +382,14 @@ export class BanconeScene extends Phaser.Scene {
     }
     const cond = c.ordine.condimento;
     if (cond !== undefined) {
-      riga(TESTI.condimenti[cond], () => this.gel.condimento === cond && (cond !== "granella" || this.gel.tocchiGranella >= TOCCHI_GRANELLA), (yy) => {
+      riga(TESTI.condimenti[cond], () => condimentoFatto(this.gel) === cond, (yy) => {
         icone.fillStyle(coloreCondimento(cond), 1);
-        if (cond === "granella") {
+        if (cond === "panna") {
+          icone.fillStyle(0xf1e4cf, 1);
+          icone.fillCircle(20, yy, 12);
+          disegnaPanna(icone, 20, yy + 4, 2, 0.45);
+        }
+        else if (cond === "granella") {
           for (let i = 0; i < 6; i++) {
             icone.fillStyle([0xf94144, 0xf9c74f, 0x90be6d, 0x577590, 0xf8961e, 0xb5838d][i], 1);
             icone.fillRoundedRect(12 + (i % 3) * 6, yy - 5 + Math.floor(i / 3) * 7, 5, 2.5, 1);
@@ -439,7 +469,7 @@ export class BanconeScene extends Phaser.Scene {
     if (z === "cestino") return this.butta();
     if (z.startsWith("vaschetta:")) return this.prendiPallina(z.slice("vaschetta:".length), p);
     if (z === "salsa-cioccolato" || z === "salsa-fragola") return this.iniziaSalsa(z, p.id);
-    if (z === "granella") return this.granella();
+    if (z === "granella" || z === "panna") return this.tocchi(z);
     if (z === "gelato" && this.gel.base !== undefined && this.fase === "attesa") this.spinta = { y0: p.worldY, dito: p.id };
   }
 
@@ -595,14 +625,20 @@ export class BanconeScene extends Phaser.Scene {
     this.cambiato();
   }
 
-  private granella(): void {
+  // Granella (tre tocchi) e panna (due): un tocco alla volta.
+  private tocchi(tipo: "granella" | "panna"): void {
     if (this.fase === "via") return;
     if (this.gel.base === undefined || this.gel.palline.length === 0) return this.avviso(TESTI.avvisi.primaPalline);
-    if (this.gel.condimento !== undefined && this.gel.condimento !== "granella") return this.avviso(TESTI.avvisi.giaCondito);
-    if (this.gel.tocchiGranella >= TOCCHI_GRANELLA) return;
-    this.gel.condimento = "granella";
-    this.gel.tocchiGranella++;
-    const b = this.bottiglie.get("granella");
+    if (this.gel.condimento !== undefined && this.gel.condimento !== tipo) return this.avviso(TESTI.avvisi.giaCondito);
+    if (tipo === "granella") {
+      if (this.gel.tocchiGranella >= TOCCHI_GRANELLA) return;
+      this.gel.tocchiGranella++;
+    } else {
+      if ((this.gel.tocchiPanna ?? 0) >= TOCCHI_PANNA) return;
+      this.gel.tocchiPanna = (this.gel.tocchiPanna ?? 0) + 1;
+    }
+    this.gel.condimento = tipo;
+    const b = this.bottiglie.get(tipo);
     if (b !== undefined) {
       this.tweens.killTweensOf(b);
       b.angle = 0;
@@ -640,8 +676,8 @@ export class BanconeScene extends Phaser.Scene {
     if (g.base !== o.base || troppo || (g.condimento !== undefined && g.condimento !== cond) || (mancano && g.condimento !== undefined))
       return "butta";
     if (mancano) return "pallina";
-    if (cond !== undefined && g.condimento === undefined) return cond === "granella" ? "granella" : "salsa";
-    if (cond === "granella" && this.gel.tocchiGranella < TOCCHI_GRANELLA) return "granella";
+    if (cond !== undefined && g.condimento === undefined) return cond === "granella" || cond === "panna" ? cond : "salsa";
+    if (cond !== undefined && condimentoFatto(g) === undefined && (cond === "granella" || cond === "panna")) return cond;
     return "servi";
   }
 
@@ -665,7 +701,7 @@ export class BanconeScene extends Phaser.Scene {
         if (i >= 0) resta.splice(i, 1);
       }
       if (resta.length > 0) cerchia(`vaschetta:${resta[0]}`);
-    } else if (a === "salsa" || a === "granella") cerchia(o.condimento!);
+    } else if (a === "salsa" || a === "granella" || a === "panna") cerchia(o.condimento!);
     else if (a === "servi") cerchia("gelato");
     else if (a === "butta") cerchia("cestino");
   }

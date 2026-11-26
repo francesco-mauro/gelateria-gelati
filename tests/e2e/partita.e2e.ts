@@ -52,6 +52,7 @@ async function servi(page: Page): Promise<{ giusto: boolean; condimento?: string
   await tocca(page, o.base);
   for (const p of o.palline) await trascina(page, `vaschetta:${p}`, "attacco");
   if (o.condimento === "granella") for (let i = 0; i < 3; i++) await tocca(page, "granella");
+  else if (o.condimento === "panna") for (let i = 0; i < 2; i++) await tocca(page, "panna");
   else if (o.condimento !== undefined) {
     const b = await dove(page, o.condimento);
     await page.mouse.move(b.x, b.y);
@@ -109,6 +110,30 @@ test("sei clienti serviti giusti con i gesti veri, salse e granella comprese", a
   expect(errori).toEqual([]);
 });
 
+test("Dede ordina la doppia panna: la granella diventa panna e poi torna", async ({ page }) => {
+  test.setTimeout(300000);
+  const errori = osservaErrori(page);
+  await apri(page);
+  // tutti gli amici passano prima che uno torni: Dede arriva entro tredici clienti
+  for (let i = 0; i < 13 && (await stato(page)).amico !== "dede"; i++) {
+    expect((await stato(page)).ordine!.condimento).not.toBe("panna");
+    const r = await servi(page);
+    expect(r.giusto).toBe(true);
+    await aspettaCliente(page);
+  }
+  const s = await stato(page);
+  expect(s.amico).toBe("dede");
+  expect(s.ordine!.condimento).toBe("panna");
+  await expect(dove(page, "granella")).rejects.toThrow();
+  await page.screenshot({ path: "test-results/dede-panna.png" });
+  const r = await servi(page);
+  expect(r.giusto).toBe(true);
+  await aspettaCliente(page);
+  await dove(page, "granella");
+  await expect(dove(page, "panna")).rejects.toThrow();
+  expect(errori).toEqual([]);
+});
+
 test("la salsa lasciata nel verde è perfetta, toccata appena non conta", async ({ page }) => {
   const errori = osservaErrori(page);
   await apri(page);
@@ -131,7 +156,7 @@ test("la salsa lasciata nel verde è perfetta, toccata appena non conta", async 
   expect(dopo.gelato.qualita).toBe("perfetta");
   // il cestino svuota tutto
   await tocca(page, "cestino");
-  expect((await stato(page)).gelato).toEqual({ palline: [], tocchiGranella: 0 });
+  expect((await stato(page)).gelato).toEqual({ palline: [], tocchiGranella: 0, tocchiPanna: 0 });
   // un gusto che non c'è nell'ordine: l'aiuto non invita a servire, dice di buttare
   await tocca(page, s.ordine!.base);
   const sbagliato = (await stato(page)).vaschette.find((v) => !s.ordine!.palline.includes(v))!;

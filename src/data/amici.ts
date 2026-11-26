@@ -6,12 +6,17 @@
 //   Il nome deve stare in src/data/gusti.ts (se non c'è, una riga lì).
 // - `capelli`, `stile`, `pelle`, `occhiali`, `barba`: l'aspetto è un SEGNAPOSTO scelto da Guardiana per distinguerli,
 //   non come sono davvero. Si cambia qui, un amico per riga.
+import type { Condimento } from "../logic/ordine";
+
+// `condimento`: quello che l'amico vuole sempre. Dede: «per me più che il gelato è importante la doppia panna»
+// (a Francesco, 26 novembre 2026; lui alle 12:24: «sì, aggiungi la panna per Dede»).
 export type Stile = "corti" | "lunghi" | "raccolti" | "ricci" | "caschetto" | "rasati";
 
 export interface Amico {
   id: string;
   nome: string;
   gusto?: string;
+  condimento?: Condimento;
   capelli: number;
   stile: Stile;
   pelle: number;
@@ -27,7 +32,7 @@ const DORATA = 0xd9a47c;
 export const AMICI: readonly Amico[] = [
   { id: "cristina", nome: "Cristina", capelli: 0x3b2a20, stile: "lunghi", pelle: CHIARA, maglia: 0xe0565b },
   { id: "gaia", nome: "Gaia", capelli: 0x5a3a24, stile: "ricci", pelle: MEDIA, maglia: 0x4f9dd9 },
-  { id: "dede", nome: "Dede", capelli: 0x1f1a17, stile: "raccolti", pelle: CHIARA, maglia: 0x9b6bd1 },
+  { id: "dede", nome: "Dede", condimento: "panna", capelli: 0x1f1a17, stile: "raccolti", pelle: CHIARA, maglia: 0x9b6bd1 },
   { id: "cice", nome: "Cice", capelli: 0xc98a3c, stile: "caschetto", pelle: CHIARA, maglia: 0x46b58a },
   { id: "enza", nome: "Enza", capelli: 0x2a1d16, stile: "lunghi", pelle: DORATA, maglia: 0xf2a33a },
   { id: "aurora", nome: "Aurora", capelli: 0x8a4b2a, stile: "ricci", pelle: CHIARA, maglia: 0xe86fa8 },

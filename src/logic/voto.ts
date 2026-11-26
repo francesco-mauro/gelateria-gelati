@@ -23,7 +23,7 @@ export function moltiplicatore(serie: number): number {
 export function vota(ordine: Ordine, g: Gelato, frazioneRimasta: number, serie: number): Voto {
   if (confronta(ordine, g).length > 0) return { giusto: false, stelle: 0, punti: 0 };
   const f = Math.max(0, Math.min(1, frazioneRimasta));
-  const salsaOk = ordine.condimento === undefined || ordine.condimento === "granella" || g.qualita === "perfetta";
+  const salsaOk = ordine.condimento === undefined || ordine.condimento === "granella" || ordine.condimento === "panna" || g.qualita === "perfetta";
   let stelle = 1;
   if (f >= SOGLIA_DUE) stelle++;
   if (f >= SOGLIA_TRE && salsaOk) stelle++;

@@ -10,8 +10,8 @@ export const TESTI = {
   cono: "Cono",
   coppetta: "Coppetta",
   butta: "Butta",
-  condimenti: { "salsa-cioccolato": "Salsa cioccolato", "salsa-fragola": "Salsa fragola", granella: "Granella" },
-  bottiglie: { "salsa-cioccolato": "Cioccolato", "salsa-fragola": "Fragola", granella: "Granella" },
+  condimenti: { "salsa-cioccolato": "Salsa cioccolato", "salsa-fragola": "Salsa fragola", granella: "Granella", panna: "Doppia panna" },
+  bottiglie: { "salsa-cioccolato": "Cioccolato", "salsa-fragola": "Fragola", granella: "Granella", panna: "Panna" },
   grazie: ["Grazie Lau!", "Buonissimo!", "Che bontà!", "Perfetto!", "Sei la migliore!", "Proprio questo!"],
   velocissima: ["Velocissima!", "Wow, già pronto?", "Da dieci e lode!"],
   sbagliati: {
@@ -25,6 +25,7 @@ export const TESTI = {
     pallina: "Trascina la pallina fino al gelato",
     salsa: "Tieni premuta la salsa, lascia nel verde",
     granella: "Tocca la granella tre volte",
+    panna: "Tocca la panna due volte",
     servi: "Spingi il gelato verso il cliente",
     butta: "Qualcosa non torna: butta e rifallo",
   },
