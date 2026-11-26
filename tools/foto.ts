@@ -8,7 +8,7 @@ const page = await browser.newPage({ ...devices["iPhone 13"] });
 const errori: string[] = [];
 page.on("pageerror", (e) => errori.push(e.message));
 page.on("console", (m) => m.type() === "error" && errori.push(m.text()));
-await page.goto("http://localhost:4173/?prova");
+await page.goto(`${process.env.INDIRIZZO ?? "http://localhost:4173"}/?prova`);
 await page.waitForTimeout(800);
 await page.screenshot({ path: `${cartella}/1-titolo.png` });
 await page.touchscreen.tap(195, 420);

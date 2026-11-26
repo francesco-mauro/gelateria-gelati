@@ -6,7 +6,7 @@ const n = Number(process.argv[2] ?? 8);
 const browser = await chromium.launch();
 const page = await browser.newPage({ ...devices["iPhone 13"] });
 page.setDefaultTimeout(40000);
-await page.goto("http://localhost:4173/?prova");
+await page.goto(`${process.env.INDIRIZZO ?? "http://localhost:4173"}/?prova`);
 await page.waitForFunction(() => window.giocoProva?.scene.isActive("Titolo") === true);
 await page.mouse.click(195, 330);
 const stato = () => page.evaluate(() => window.banconeProva!.stato());
