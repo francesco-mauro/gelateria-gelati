@@ -85,6 +85,7 @@ export function confronta(ordine: Ordine, g: Gelato): Errore[] {
   // oxlint-disable-next-line unicorn/no-array-sort
   const b = [...g.palline].sort().join(",");
   if (a !== b) errori.push("palline");
-  if (condimentoFatto(g) !== ordine.condimento) errori.push("condimento");
+  // anche un condimento a metà che il cliente non ha chiesto è un errore: la granella sopra si vede
+  if (g.condimento !== ordine.condimento || condimentoFatto(g) !== ordine.condimento) errori.push("condimento");
   return errori;
 }

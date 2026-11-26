@@ -10,7 +10,8 @@ let muto = leggi().muto;
 export function sblocca(): void {
   try {
     if (ctx === undefined) ctx = new AudioContext();
-    if (ctx.state === "suspended") void ctx.resume();
+    // su iPhone dopo una telefonata lo stato è "interrupted", non "suspended"
+    if (ctx.state !== "running") void ctx.resume();
   } catch {
     ctx = undefined;
   }

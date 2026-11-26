@@ -51,7 +51,7 @@ export const GUSTI: readonly Gusto[] = [
   { id: "fico", nome: "Fico", colore: 0xb06a8a, puntini: 0x5a2a4a },
   { id: "cassata", nome: "Cassata", colore: 0xfbeee0, puntini: 0x4fa36a },
   { id: "vaniglia", nome: "Vaniglia", colore: 0xfbefc6, puntini: 0x3a2a1e },
-  { id: "cremino", nome: "Cremino", colore: 0xd9b48a, puntini: 0x5a3a24 },
+  { id: "cremino", nome: "Cremino", colore: 0xb5835a, puntini: 0xf5e9d3 },
 ];
 
 export const MAX_VASCHETTE = 8;

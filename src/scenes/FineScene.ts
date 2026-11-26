@@ -51,9 +51,9 @@ export class FineScene extends Phaser.Scene {
       onUpdate: (t) => p.setText(String(Math.round(t.getValue() ?? 0))),
     });
     scritta(this, cx, top + 182, `${TESTI.fine.serviti}: ${d.serviti}`, 17, COLORI.scuro);
+    const st = scritta(this, cx + 12, top + 220, `${TESTI.fine.stelle}: ${d.stelle}`, 17, COLORI.scuro);
     const sg = this.add.graphics();
-    disegnaStella(sg, cx - 40, top + 220, 12, true);
-    scritta(this, cx + 8, top + 220, `${TESTI.fine.stelle}: ${d.stelle}`, 17, COLORI.scuro);
+    disegnaStella(sg, st.x - st.displayWidth / 2 - 18, top + 220, 12, true);
     if (nuovo && d.punti > 0) {
       const r = scritta(this, cx, top + 272, TESTI.fine.nuovoRecord, 26, COLORI.verde, { stroke: "#ffffff", strokeThickness: 4 });
       this.tweens.add({ targets: r, scale: 1.12, duration: 420, yoyo: true, repeat: -1, ease: "Sine.inOut" });

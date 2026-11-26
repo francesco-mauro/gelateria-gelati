@@ -108,6 +108,11 @@ describe("ordine e confronto", () => {
     expect(confronta(o, giusto(o, { tocchiGranella: 2 }))).toEqual(["condimento"]);
     expect(confronta(o, giusto(o, { tocchiGranella: 3 }))).toEqual([]);
   });
+  it("la granella toccata per sbaglio su un gelato senza condimento è un errore", () => {
+    const o: Ordine = { base: "cono", palline: ["fragola"] };
+    expect(confronta(o, giusto(o, { condimento: "granella", tocchiGranella: 1 }))).toEqual(["condimento"]);
+    expect(confronta(o, giusto(o))).toEqual([]);
+  });
   it("la panna vale solo con due tocchi", () => {
     const o: Ordine = { base: "coppetta", palline: ["nocciola"], condimento: "panna" };
     expect(confronta(o, giusto(o, { tocchiPanna: 1 }))).toEqual(["condimento"]);

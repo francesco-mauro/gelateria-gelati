@@ -45,6 +45,9 @@ import {
 import { Partita, type Cliente } from "../logic/partita";
 import type { Voto } from "../logic/voto";
 
+// quanto resta il fumetto quando il gelato è sbagliato o il cliente se ne va (ms)
+const LETTURA_ERRORE = 1700;
+
 export type Fase = "arrivo" | "attesa" | "via" | "fine";
 type Salsa = "salsa-cioccolato" | "salsa-fragola";
 
@@ -642,6 +645,7 @@ export class BanconeScene extends Phaser.Scene {
     if (b !== undefined) {
       this.tweens.killTweensOf(b);
       b.angle = 0;
+      b.setScale(1);
       this.tweens.add({ targets: b, angle: { from: -25, to: 25 }, duration: 70, yoyo: true, repeat: 1, onComplete: () => (b.angle = 0) });
     }
     suona("granella");
@@ -746,11 +750,12 @@ export class BanconeScene extends Phaser.Scene {
       suona("sbagliato");
       vibra(80);
       a?.umore("triste");
-      this.fumetto(TESTI.sbagliati[errore ?? "palline"]);
+      // l'errore resta di più: è la frase che spiega cosa non andava
+      this.fumetto(TESTI.sbagliati[errore ?? "palline"], LETTURA_ERRORE);
       this.cameras.main.shake(180, 0.006);
     }
     this.aggiornaTesta();
-    this.time.delayedCall(1050, () => this.congeda());
+    this.time.delayedCall(v.giusto ? 1050 : LETTURA_ERRORE + 50, () => this.congeda());
   }
 
   private scaduto(): void {
@@ -762,10 +767,10 @@ export class BanconeScene extends Phaser.Scene {
     suona("sbagliato");
     vibra(80);
     this.amico?.umore("triste");
-    this.fumetto(scegli(Math.random, TESTI.scaduto));
+    this.fumetto(scegli(Math.random, TESTI.scaduto), LETTURA_ERRORE);
     this.aggiornaTesta();
     this.aggiornaAiuto();
-    this.time.delayedCall(1050, () => this.congeda());
+    this.time.delayedCall(LETTURA_ERRORE + 50, () => this.congeda());
   }
 
   private annullaGesti(): void {
@@ -777,7 +782,7 @@ export class BanconeScene extends Phaser.Scene {
     this.spinta = undefined;
   }
 
-  private fumetto(testo: string): void {
+  private fumetto(testo: string, ms = 1000): void {
     const x = Math.max(110, this.xCliente + 40);
     const y = this.yBanco - 170;
     const t = scritta(this, x, y, testo, 15, COLORI.scuro, {
@@ -787,7 +792,7 @@ export class BanconeScene extends Phaser.Scene {
     }).setDepth(56);
     t.setScale(0.3);
     this.tweens.add({ targets: t, scale: 1, duration: 180, ease: "Back.out" });
-    this.time.delayedCall(1000, () => this.tweens.add({ targets: t, alpha: 0, duration: 200, onComplete: () => t.destroy() }));
+    this.time.delayedCall(ms, () => this.tweens.add({ targets: t, alpha: 0, duration: 200, onComplete: () => t.destroy() }));
   }
 
   private stelle(n: number): void {
