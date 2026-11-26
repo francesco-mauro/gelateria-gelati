@@ -19,7 +19,6 @@ const ALIAS_AMICI: Record<string, string[]> = {
   cristina: ["falco", "showoman"],
   gaia: ["salemi"],
   dede: ["andreea", "caragia"],
-  cice: ["alice"],
   enza: ["enzina"],
   aurora: ["auris", "labanca"],
   gilberto: ["magnacrani"],

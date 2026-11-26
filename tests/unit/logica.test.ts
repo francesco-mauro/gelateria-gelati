@@ -297,10 +297,13 @@ describe("risposte degli amici", () => {
     for (const g of GUSTI) expect(trovaGusto(g.nome)?.gusto).toBe(g.id);
   });
   it("scrive e riscrive il gusto nella riga dell'amico", () => {
-    const sorgente = readFileSync(new URL("../../src/data/amici.ts", import.meta.url), "utf8");
-    const una = scriviGusti(sorgente, { cristina: "pistacchio", cice: "fragola" });
+    // una riga senza gusto in coda, perché oggi tutti gli amici ne hanno uno
+    const sorgente =
+      readFileSync(new URL("../../src/data/amici.ts", import.meta.url), "utf8") +
+      '\n  { id: "prova", nome: "Prova", capelli: 0, stile: "corti", pelle: 0, maglia: 0 },\n';
+    const una = scriviGusti(sorgente, { cristina: "pistacchio", prova: "fragola" });
     expect(una).toContain('{ id: "cristina", nome: "Cristina", gusto: "pistacchio",');
-    expect(una).toContain('{ id: "cice", nome: "Cice", gusto: "fragola",');
+    expect(una).toContain('{ id: "prova", nome: "Prova", gusto: "fragola",');
     const due = scriviGusti(una, { cristina: "nocciola" });
     expect(due).toContain('{ id: "cristina", nome: "Cristina", gusto: "nocciola",');
     expect(due.split("\n").length).toBe(sorgente.split("\n").length);
