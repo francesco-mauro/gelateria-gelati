@@ -26,6 +26,7 @@ export const TESTI = {
     salsa: "Tieni premuta la salsa, lascia nel verde",
     granella: "Tocca la granella tre volte",
     servi: "Spingi il gelato verso il cliente",
+    butta: "Qualcosa non torna: butta e rifallo",
   },
   avvisi: {
     primaBase: "Prima il cono o la coppetta!",

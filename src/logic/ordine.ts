@@ -57,8 +57,11 @@ export type Errore = "base" | "palline" | "condimento";
 export function confronta(ordine: Ordine, g: Gelato): Errore[] {
   const errori: Errore[] = [];
   if (g.base !== ordine.base) errori.push("base");
-  const a = ordine.palline.toSorted().join(",");
-  const b = g.palline.toSorted().join(",");
+  // sort su una copia, non toSorted: toSorted manca su Safari prima della 16 (iPhone con iOS 15)
+  // oxlint-disable-next-line unicorn/no-array-sort
+  const a = [...ordine.palline].sort().join(",");
+  // oxlint-disable-next-line unicorn/no-array-sort
+  const b = [...g.palline].sort().join(",");
   if (a !== b) errori.push("palline");
   const fatto = g.condimento === "granella" && g.tocchiGranella < TOCCHI_GRANELLA ? undefined : g.condimento;
   if (fatto !== ordine.condimento) errori.push("condimento");

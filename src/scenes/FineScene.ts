@@ -76,9 +76,12 @@ export class FineScene extends Phaser.Scene {
     bottone(yR, TESTI.fine.rigioca, COLORI.tenda);
     bottone(yR + 64, TESTI.fine.titoloBottone, COLORI.bancoBordo);
 
+    // per i primi 700 ms i tocchi non contano: chi stava ancora toccando il bancone non salta i punti per sbaglio
     let via = false;
+    // l'orologio della pagina: quello della scena riparte da zero a ogni apertura e farebbe saltare la pausa
+    const pronto = performance.now() + 700;
     this.input.on("pointerdown", (ptr: Phaser.Input.Pointer) => {
-      if (via || Math.abs(ptr.worldX - cx) > 130) return;
+      if (via || performance.now() < pronto || Math.abs(ptr.worldX - cx) > 130) return;
       const dove = Math.abs(ptr.worldY - yR) <= 26 ? "Bancone" : Math.abs(ptr.worldY - yR - 64) <= 26 ? "Titolo" : undefined;
       if (dove === undefined) return;
       via = true;

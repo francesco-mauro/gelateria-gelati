@@ -118,9 +118,9 @@ export class BanconeScene extends Phaser.Scene {
   private bottiglie = new Map<string, Phaser.GameObjects.Graphics>();
 
   // i gesti in corso
-  private trascinata?: { gusto: string; g: Phaser.GameObjects.Graphics; da: { x: number; y: number }; mosso: number };
-  private versando?: { tipo: Salsa; livello: number; barra: Phaser.GameObjects.Graphics };
-  private spinta?: { y0: number };
+  private trascinata?: { gusto: string; g: Phaser.GameObjects.Graphics; da: { x: number; y: number }; mosso: number; dito: number };
+  private versando?: { tipo: Salsa; livello: number; barra: Phaser.GameObjects.Graphics; dito: number };
+  private spinta?: { y0: number; dito: number };
 
   constructor() {
     super("Bancone");
@@ -243,7 +243,7 @@ export class BanconeScene extends Phaser.Scene {
     g.fillRect(0, 0, LARGO, 44);
     for (let i = 0; i < 3; i++) disegnaCuore(g, 22 + i * 26, 20, i < this.partita.cuori);
     this.testoPunti.setText(String(this.partita.punti));
-    this.testoSerie.setText(this.partita.serie >= 2 ? `serie ×${(1 + Math.min(this.partita.serie, 5) * 0.1).toFixed(1)}` : "");
+    this.testoSerie.setText(this.partita.serie >= 1 ? `serie ×${(1 + Math.min(this.partita.serie, 5) * 0.1).toFixed(1)}` : "");
   }
 
   // ---------- clienti ----------
@@ -253,6 +253,8 @@ export class BanconeScene extends Phaser.Scene {
       this.chiudi();
       return;
     }
+    // gli aiuti si ricontrollano a ogni cliente: spariscono appena il telefono conta tre clienti serviti
+    this.conAiuti = leggi().servitiTotali < SERVITI_CON_AIUTO;
     const c = this.partita.prossimoCliente();
     this.cliente = c;
     this.tempo = c.pazienza;
@@ -403,12 +405,19 @@ export class BanconeScene extends Phaser.Scene {
     if (z === "cono" || z === "coppetta") return this.mettiBase(z);
     if (z === "cestino") return this.butta();
     if (z.startsWith("vaschetta:")) return this.prendiPallina(z.slice("vaschetta:".length), p);
-    if (z === "salsa-cioccolato" || z === "salsa-fragola") return this.iniziaSalsa(z);
+    if (z === "salsa-cioccolato" || z === "salsa-fragola") return this.iniziaSalsa(z, p.id);
     if (z === "granella") return this.granella();
-    if (z === "gelato" && this.gel.base !== undefined && this.fase === "attesa") this.spinta = { y0: p.worldY };
+    if (z === "gelato" && this.gel.base !== undefined && this.fase === "attesa") this.spinta = { y0: p.worldY, dito: p.id };
+  }
+
+  // Ogni gesto appartiene al dito che l'ha cominciato: gli altri dita (un pollice che si alza, la mano che tiene il
+  // telefono) non lo muovono e non lo chiudono.
+  private ditoDelGesto(): number | undefined {
+    return this.trascinata?.dito ?? this.versando?.dito ?? this.spinta?.dito;
   }
 
   private muovi(p: Phaser.Input.Pointer): void {
+    if (p.id !== this.ditoDelGesto()) return;
     if (this.trascinata !== undefined) {
       const t = this.trascinata;
       t.mosso = Math.max(t.mosso, Math.hypot(p.worldX - t.da.x, p.worldY - t.da.y));
@@ -425,6 +434,7 @@ export class BanconeScene extends Phaser.Scene {
   }
 
   private su(p: Phaser.Input.Pointer): void {
+    if (p.id !== this.ditoDelGesto()) return;
     if (this.trascinata !== undefined) this.lasciaPallina(p);
     if (this.versando !== undefined) this.fermaSalsa();
     if (this.spinta !== undefined) {
@@ -472,7 +482,7 @@ export class BanconeScene extends Phaser.Scene {
     const g = this.add.graphics().setDepth(45);
     disegnaPallina(g, id, 0, 0);
     g.setPosition(p.worldX, p.worldY - 18);
-    this.trascinata = { gusto: id, g, da: { x: p.worldX, y: p.worldY }, mosso: 0 };
+    this.trascinata = { gusto: id, g, da: { x: p.worldX, y: p.worldY }, mosso: 0, dito: p.id };
     suona("tocco");
   }
 
@@ -493,12 +503,12 @@ export class BanconeScene extends Phaser.Scene {
     this.tweens.add({ targets: t.g, x: t.da.x, y: t.da.y, scale: 0.3, alpha: 0, duration: 200, onComplete: () => t.g.destroy() });
   }
 
-  private iniziaSalsa(tipo: Salsa): void {
+  private iniziaSalsa(tipo: Salsa, dito: number): void {
     if (this.fase === "via") return;
     if (this.gel.base === undefined || this.gel.palline.length === 0) return this.avviso(TESTI.avvisi.primaPalline);
     if (this.gel.condimento !== undefined) return this.avviso(TESTI.avvisi.giaCondito);
     const barra = this.add.graphics().setDepth(46);
-    this.versando = { tipo, livello: 0, barra };
+    this.versando = { tipo, livello: 0, barra, dito };
     const b = this.bottiglie.get(tipo);
     if (b !== undefined) {
       this.tweens.killTweensOf(b);
@@ -585,11 +595,19 @@ export class BanconeScene extends Phaser.Scene {
   private aiutoAttuale(): string {
     const c = this.cliente;
     if (!this.conAiuti || c === undefined || this.fase !== "attesa") return "";
-    if (this.gel.base !== c.ordine.base) return "base";
-    const mancano = c.ordine.palline.length > this.gel.palline.length;
-    if (mancano && this.gel.condimento === undefined) return "pallina";
-    const cond = c.ordine.condimento;
-    if (cond !== undefined && this.gel.condimento === undefined) return cond === "granella" ? "granella" : "salsa";
+    const o = c.ordine;
+    const g = this.gel;
+    const cond = o.condimento;
+    const pieno = g.palline.length > 0 || g.condimento !== undefined;
+    if (g.base === undefined || (g.base !== o.base && !pieno)) return "base";
+    // quello che non si aggiusta più: base sbagliata sotto le palline, un gusto di troppo, il condimento sbagliato,
+    // palline che mancano sotto un condimento già messo. Allora si butta.
+    const troppo = g.palline.some((p) => g.palline.filter((x) => x === p).length > o.palline.filter((x) => x === p).length);
+    const mancano = o.palline.length > g.palline.length;
+    if (g.base !== o.base || troppo || (g.condimento !== undefined && g.condimento !== cond) || (mancano && g.condimento !== undefined))
+      return "butta";
+    if (mancano) return "pallina";
+    if (cond !== undefined && g.condimento === undefined) return cond === "granella" ? "granella" : "salsa";
     if (cond === "granella" && this.gel.tocchiGranella < TOCCHI_GRANELLA) return "granella";
     return "servi";
   }
@@ -616,6 +634,7 @@ export class BanconeScene extends Phaser.Scene {
       if (resta.length > 0) cerchia(`vaschetta:${resta[0]}`);
     } else if (a === "salsa" || a === "granella") cerchia(o.condimento!);
     else if (a === "servi") cerchia("gelato");
+    else if (a === "butta") cerchia("cestino");
   }
 
   // ---------- servire, scadere, chiudere ----------

@@ -112,6 +112,37 @@ test("la salsa lasciata nel verde è perfetta, toccata appena non conta", async 
   // il cestino svuota tutto
   await tocca(page, "cestino");
   expect((await stato(page)).gelato).toEqual({ palline: [], tocchiGranella: 0 });
+  // un gusto che non c'è nell'ordine: l'aiuto non invita a servire, dice di buttare
+  await tocca(page, s.ordine!.base);
+  const sbagliato = (await stato(page)).vaschette.find((v) => !s.ordine!.palline.includes(v))!;
+  await trascina(page, `vaschetta:${sbagliato}`, "attacco");
+  expect((await stato(page)).aiuto).toBe("butta");
+  await tocca(page, "cestino");
+  expect((await stato(page)).aiuto).toBe("base");
+  expect(errori).toEqual([]);
+});
+
+test("un secondo dito che si alza non interrompe la pallina trascinata", async ({ page }) => {
+  const errori = osservaErrori(page);
+  await apri(page);
+  const s = await stato(page);
+  await tocca(page, s.ordine!.base);
+  // due dita con i tocchi veri: il primo appoggiato sul muro, il secondo trascina la pallina
+  const v = await dove(page, `vaschetta:${s.ordine!.palline[0]}`);
+  const a = await dove(page, "attacco");
+  const cdp = await page.context().newCDPSession(page);
+  const tocco = (type: "touchStart" | "touchMove" | "touchEnd", punti: { x: number; y: number; id: number }[]) =>
+    cdp.send("Input.dispatchTouchEvent", { type, touchPoints: punti.map((p) => ({ x: p.x, y: p.y, id: p.id })) });
+  const muro = { x: 40, y: 120, id: 1 };
+  await tocco("touchStart", [muro]);
+  await tocco("touchStart", [muro, { ...v, id: 2 }]);
+  await tocco("touchMove", [muro, { x: (v.x + a.x) / 2, y: (v.y + a.y) / 2, id: 2 }]);
+  // il dito sul muro si alza a metà trascinamento: per Chrome è un touchMove con il solo dito rimasto
+  // (un touchEnd vorrebbe dire «tutte le dita su»)
+  await tocco("touchMove", [{ x: (v.x + a.x) / 2, y: (v.y + a.y) / 2, id: 2 }]);
+  await tocco("touchMove", [{ ...a, id: 2 }]);
+  await tocco("touchEnd", []);
+  await expect.poll(async () => (await stato(page)).gelato.palline).toEqual([s.ordine!.palline[0]]);
   expect(errori).toEqual([]);
 });
 
@@ -134,13 +165,19 @@ test("tre gelati sbagliati chiudono la gelateria, il record resta e si riapre", 
     await page.waitForFunction(() => window.banconeProva!.stato().fase !== "attesa");
     expect((await stato(page)).ultimoVoto!.giusto).toBe(false);
   }
-  await page.waitForFunction(() => window.giocoProva?.scene.isActive("Fine") === true);
+  // subito dopo la chiusura i tocchi non contano (così non si saltano i punti per sbaglio): il tocco parte appena
+  // la schermata finale c'è, prima di qualunque altra lettura
+  await page.waitForFunction(() => window.fineProva !== undefined);
+  const r = await page.evaluate(() => window.fineProva!.schermo("rigioca"));
+  await page.mouse.click(r.x, r.y);
+  await page.waitForTimeout(150);
+  expect(await page.evaluate(() => window.giocoProva!.scene.isActive("Fine"))).toBe(true);
   const fine = await page.evaluate(() => ({ nuovo: window.fineProva!.nuovoRecord, record: window.fineProva!.record }));
   expect(fine.nuovo).toBe(true);
   expect(fine.record).toBeGreaterThan(0);
   const salvato = await page.evaluate(() => JSON.parse(localStorage.getItem("gelateria-gelati") ?? "{}"));
   expect(salvato.record).toBe(fine.record);
-  const r = await page.evaluate(() => window.fineProva!.schermo("rigioca"));
+  await page.waitForTimeout(800);
   await page.mouse.click(r.x, r.y);
   await page.waitForFunction(() => window.banconeProva?.stato().fase === "attesa");
   expect((await stato(page)).cuori).toBe(3);

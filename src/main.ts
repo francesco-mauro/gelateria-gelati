@@ -22,7 +22,8 @@ export const gioco = new Phaser.Game({
   backgroundColor: "#5b3a4a",
   antialias: true,
   audio: { noAudio: true }, // l'audio è nostro (src/audio)
-  input: { activePointers: 2 },
+  // tre puntatori: il mouse più due dita, così una mano che tiene il telefono non blocca il dito che gioca
+  input: { activePointers: 3 },
   scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
   scene: [TitoloScene, BanconeScene, FineScene],
 });
