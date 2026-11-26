@@ -52,7 +52,7 @@ export class Partita {
     this.ultimo = amico.id;
     const cambio = this.faiPostoA(amico.gusto);
     const d = difficolta(this.numero);
-    const ordine = creaOrdine(this.caso, d, this.vaschette, amico.gusto, amico.condimento);
+    const ordine = creaOrdine(this.caso, d, this.vaschette, amico.gusto, amico.condimento, amico.altri);
     const c: Cliente = { amico, ordine, pazienza: d.pazienza, numero: this.numero++ };
     if (cambio !== undefined) c.cambio = cambio;
     return c;

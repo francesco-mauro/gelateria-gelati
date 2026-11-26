@@ -65,6 +65,21 @@ describe("ordine e confronto", () => {
     const v = vaschette(["menta"]);
     for (let n = 0; n < 30; n++) expect(creaOrdine(caso, difficolta(n), v, "menta").palline).toContain("menta");
   });
+  it("gli altri gusti dell'amico entrano se ci sono più palline e sono sul bancone", () => {
+    const caso = casoConSeme(4);
+    const v = vaschette(["menta", "vaniglia"]);
+    for (let n = 0; n < 40; n++) {
+      const o = creaOrdine(caso, difficolta(n), v, "menta", undefined, ["vaniglia", "mango"]);
+      expect(o.palline[0]).toBe("menta");
+      expect(o.palline.length === 1 || o.palline[1] === "vaniglia").toBe(true);
+      expect(o.palline).not.toContain("mango");
+    }
+  });
+  it("gli altri gusti degli amici esistono tutti", () => {
+    const altri = AMICI.flatMap((a) => a.altri ?? []);
+    expect(altri.length).toBeGreaterThan(0);
+    expect(() => altri.forEach((id) => gusto(id))).not.toThrow();
+  });
   it("le palline restano tra minimo e massimo e vengono dal bancone", () => {
     const caso = casoConSeme(3);
     const v = vaschette([]);

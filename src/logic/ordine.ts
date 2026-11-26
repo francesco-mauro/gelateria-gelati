@@ -36,11 +36,20 @@ export function gelatoVuoto(): Gelato {
   return { palline: [], tocchiGranella: 0, tocchiPanna: 0 };
 }
 
-export function creaOrdine(caso: Caso, d: Difficolta, vaschette: readonly string[], preferito?: string, condimentoFisso?: Condimento): Ordine {
+// `altri`: gli altri gusti che l'amico ha detto; entrano nell'ordine se ci sono più palline e sono già sul bancone.
+export function creaOrdine(
+  caso: Caso,
+  d: Difficolta,
+  vaschette: readonly string[],
+  preferito?: string,
+  condimentoFisso?: Condimento,
+  altri: readonly string[] = [],
+): Ordine {
   const base: Base = caso() < d.probCoppetta ? "coppetta" : "cono";
   const quante = intero(caso, d.pallineMin, d.pallineMax);
   const palline: string[] = [];
   if (preferito !== undefined && vaschette.includes(preferito)) palline.push(preferito);
+  for (const a of altri) if (palline.length < quante && vaschette.includes(a) && !palline.includes(a)) palline.push(a);
   while (palline.length < quante) palline.push(scegli(caso, vaschette));
   const ordine: Ordine = { base, palline };
   if (condimentoFisso !== undefined) ordine.condimento = condimentoFisso;
