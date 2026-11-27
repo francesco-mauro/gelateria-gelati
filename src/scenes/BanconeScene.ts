@@ -418,7 +418,7 @@ export class BanconeScene extends Phaser.Scene {
     for (const r of this.righeBiglietto) {
       const ok = r.fatta();
       r.spunta.clear();
-      r.testo.setAlpha(ok ? 0.45 : 1);
+      r.testo.setAlpha(ok ? 0.6 : 1);
       if (ok) {
         r.spunta.lineStyle(3.5, COLORI.verde, 1);
         r.spunta.beginPath();
@@ -623,7 +623,8 @@ export class BanconeScene extends Phaser.Scene {
     }
     this.gel.condimento = v.tipo;
     this.gel.qualita = q;
-    this.avviso(TESTI.salsa[q], this.xGel, this.yAtt - 130);
+    // sul cono, non sopra il biglietto
+    this.avviso(TESTI.salsa[q], this.xGel, this.yAtt + 50);
     vibra(12);
     this.cambiato();
   }
@@ -694,7 +695,9 @@ export class BanconeScene extends Phaser.Scene {
     g.lineStyle(3, COLORI.tenda, 1);
     const cerchia = (nome: string): void => {
       const z = this.zone.find((x) => x.nome === nome);
-      if (z !== undefined) g.strokeRoundedRect(z.x - z.w / 2 + 2, z.y - z.h / 2 + 2, z.w - 4, z.h - 4, 12);
+      // le vaschette hanno il nome sotto: la cornice lo comprende
+      const giu = nome.startsWith("vaschetta:") ? 8 : 0;
+      if (z !== undefined) g.strokeRoundedRect(z.x - z.w / 2 + 2, z.y - z.h / 2 + 2, z.w - 4, z.h - 4 + giu, 12);
     };
     const o = this.cliente.ordine;
     if (a === "base") cerchia(o.base);
@@ -782,17 +785,26 @@ export class BanconeScene extends Phaser.Scene {
     this.spinta = undefined;
   }
 
+  // il fumetto del cliente: bianco, angoli tondi, una codina che scende verso la sua testa
+  // sta sopra il cliente, a sinistra del biglietto (che parte da x 178), così non lo copre mai
   private fumetto(testo: string, ms = 1000): void {
-    const x = Math.max(110, this.xCliente + 40);
-    const y = this.yBanco - 170;
-    const t = scritta(this, x, y, testo, 15, COLORI.scuro, {
-      backgroundColor: "#ffffff",
-      padding: { x: 10, y: 7 },
-      wordWrap: { width: 190 },
-    }).setDepth(56);
-    t.setScale(0.3);
-    this.tweens.add({ targets: t, scale: 1, duration: 180, ease: "Back.out" });
-    this.time.delayedCall(ms, () => this.tweens.add({ targets: t, alpha: 0, duration: 200, onComplete: () => t.destroy() }));
+    const t = scritta(this, 0, 0, testo, 15, COLORI.scuro, { wordWrap: { width: 140 } });
+    const w = t.width + 24;
+    const h = t.height + 14;
+    // il bordo basso resta sempre alla stessa altezza, sopra le stelle: le righe in più crescono verso l'alto
+    const y = this.yBanco - 152 - h / 2;
+    const x = Math.min(Math.max(this.xCliente, w / 2 + 6), 172 - w / 2);
+    const g = this.add.graphics();
+    g.fillStyle(0x000000, 0.1);
+    g.fillRoundedRect(-w / 2 + 2, -h / 2 + 3, w, h, 12);
+    g.fillStyle(0xffffff, 1);
+    g.fillRoundedRect(-w / 2, -h / 2, w, h, 12);
+    const coda = Phaser.Math.Clamp(this.xCliente - x, -w / 2 + 16, w / 2 - 16);
+    g.fillTriangle(coda - 8, h / 2 - 1, coda + 8, h / 2 - 1, coda - 2, h / 2 + 11);
+    const c = this.add.container(x, y, [g, t]).setDepth(56);
+    c.setScale(0.3);
+    this.tweens.add({ targets: c, scale: 1, duration: 180, ease: "Back.out" });
+    this.time.delayedCall(ms, () => this.tweens.add({ targets: c, alpha: 0, duration: 200, onComplete: () => c.destroy() }));
   }
 
   private stelle(n: number): void {

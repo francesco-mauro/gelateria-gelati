@@ -29,7 +29,8 @@ export class FineScene extends Phaser.Scene {
     const H = altoDi(this);
     const nuovo = fineDiPartita(d.punti);
     const record = leggi().record;
-    const g = this.add.graphics();
+    // il muro più in fondo di tutto, i coriandoli subito sopra: cadono dietro il riquadro e i bottoni
+    const g = this.add.graphics().setDepth(-2);
     disegnaMuro(g, 0, H);
     disegnaTenda(g, 0, 34);
 
@@ -55,7 +56,7 @@ export class FineScene extends Phaser.Scene {
     const sg = this.add.graphics();
     disegnaStella(sg, st.x - st.displayWidth / 2 - 18, top + 220, 12, true);
     if (nuovo && d.punti > 0) {
-      const r = scritta(this, cx, top + 272, TESTI.fine.nuovoRecord, 26, COLORI.verde, { stroke: "#ffffff", strokeThickness: 4 });
+      const r = scritta(this, cx, top + 272, TESTI.fine.nuovoRecord, 26, 0x2f9e6b, { stroke: "#ffffff", strokeThickness: 4 });
       this.tweens.add({ targets: r, scale: 1.12, duration: 420, yoyo: true, repeat: -1, ease: "Sine.inOut" });
       this.time.delayedCall(300, () => suona("record"));
       this.coriandoli();
@@ -112,7 +113,7 @@ export class FineScene extends Phaser.Scene {
   private coriandoli(): void {
     const colori = [COLORI.tenda, COLORI.giallo, COLORI.verde, 0x4f9dd9, 0x9b6bd1];
     for (let i = 0; i < 40; i++) {
-      const r = this.add.rectangle(Phaser.Math.Between(10, LARGO - 10), -10, 6, 10, colori[i % colori.length]).setDepth(70);
+      const r = this.add.rectangle(Phaser.Math.Between(10, LARGO - 10), -10, 6, 10, colori[i % colori.length]).setDepth(-1);
       this.tweens.add({
         targets: r,
         y: altoDi(this) + 20,
