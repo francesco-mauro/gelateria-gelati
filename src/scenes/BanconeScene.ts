@@ -367,6 +367,9 @@ export class BanconeScene extends Phaser.Scene {
     const riga = (testo: string, fatta: () => boolean, icona: (yy: number) => void): void => {
       icona(y);
       const t = scritta(this, 40, y, testo, 13, COLORI.scuro).setOrigin(0, 0.5);
+      // una riga lunga («Topping cioccolato») si stringe quanto basta per non finire sotto la spunta
+      const spazio = w - 16 - 10 - 40;
+      if (t.width > spazio) t.setScale(spazio / t.width);
       const sp = this.add.graphics();
       parti.push(t, sp);
       this.righeBiglietto.push({ testo: t, spunta: sp, fatta });
