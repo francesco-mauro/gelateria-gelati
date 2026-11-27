@@ -343,9 +343,13 @@ export class BanconeScene extends Phaser.Scene {
     const x0 = 178;
     const w = LARGO - x0 - 10;
     const righe = 1 + c.ordine.palline.length + (c.ordine.condimento === undefined ? 0 : 1);
-    const passo = 25;
+    // il biglietto sta tra il tendone (che finisce a y 86, festoni compresi) e il bancone: con cinque righe sul
+    // telefono basso le righe si stringono, fino a 20, invece di salire sopra la tenda
+    const sotto = 90;
+    const passo = Phaser.Math.Clamp(Math.floor((this.yBanco - 6 - sotto - 56) / righe), 20, 25);
+    const scala = passo / 25;
     const alto = 34 + righe * passo + 22;
-    const yTop = Math.max(52, this.yBanco - alto - 6);
+    const yTop = Math.max(sotto, this.yBanco - alto - 6);
     const parti: Phaser.GameObjects.GameObject[] = [];
     const fondo = this.add.graphics();
     fondo.fillStyle(0x000000, 0.12);
@@ -371,7 +375,7 @@ export class BanconeScene extends Phaser.Scene {
     };
     const base = c.ordine.base;
     riga(base === "cono" ? TESTI.cono : TESTI.coppetta, () => this.gel.base === base, (yy) =>
-      disegnaBase(icone, base, 20, yy - 8, base === "cono" ? 0.22 : 0.28),
+      disegnaBase(icone, base, 20, yy - 8 * scala, (base === "cono" ? 0.22 : 0.28) * scala),
     );
     // le palline: la k-esima pallina di un gusto è spuntata se nel gelato ce ne sono almeno k
     const contate = new Map<string, number>();
@@ -379,8 +383,7 @@ export class BanconeScene extends Phaser.Scene {
       const k = (contate.get(p) ?? 0) + 1;
       contate.set(p, k);
       riga(gusto(p).nome, () => this.gel.palline.filter((x) => x === p).length >= k, (yy) => {
-        const s = 0.36;
-        disegnaPallina(icone, p, 20, yy, s);
+        disegnaPallina(icone, p, 20, yy, 0.36 * scala);
       });
     }
     const cond = c.ordine.condimento;
@@ -389,8 +392,8 @@ export class BanconeScene extends Phaser.Scene {
         icone.fillStyle(coloreCondimento(cond), 1);
         if (cond === "panna") {
           icone.fillStyle(0xf1e4cf, 1);
-          icone.fillCircle(20, yy, 12);
-          disegnaPanna(icone, 20, yy + 4, 2, 0.45);
+          icone.fillCircle(20, yy, 12 * scala);
+          disegnaPanna(icone, 20, yy + 4 * scala, 2, 0.45 * scala);
         }
         else if (cond === "granella") {
           for (let i = 0; i < 6; i++) {
