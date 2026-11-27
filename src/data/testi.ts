@@ -1,5 +1,5 @@
 // Tutte le scritte del gioco in un posto solo, per cambiarle senza toccare il codice.
-// `dedica` è l'unica frase a nome di Francesco: per ora la più corta possibile, la sceglie lui.
+// `dedica` è l'unica frase a nome di Francesco, la più corta possibile: «per Lau 💙», confermata da lui il 27 novembre 2026.
 export const TESTI = {
   titolo: "Gelateria\nGelati",
   sottotitolo: "un cliente alla volta, sempre più in fretta",
